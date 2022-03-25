@@ -1,6 +1,7 @@
+//
+//  Libraries
+//
 import { useState } from 'react'
-import EmployeeForm from './EmployeeForm'
-import PageHeader from '../../components/PageHeader'
 import PeopleOutlineTwoToneIcon from '@mui/icons-material/PeopleOutlineTwoTone'
 import {
   Paper,
@@ -11,17 +12,30 @@ import {
   InputAdornment
 } from '@mui/material'
 import makeStyles from '@mui/styles/makeStyles'
-import useTable from '../../components/useTable'
-import * as employeeService from '../../services/employeeService'
-import Controls from '../../components/controls/Controls'
 import SearchIcon from '@mui/icons-material/Search'
 import AddIcon from '@mui/icons-material/Add'
-import Popup from '../../components/Popup'
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
 import CloseIcon from '@mui/icons-material/Close'
-import Notification from '../../components/Notification'
-import ConfirmDialog from '../../components/ConfirmDialog'
-
+//
+//  Pages
+//
+import RowEntry from './RowEntry'
+//
+//  Components
+//
+import Controls from '../components/controls/Controls'
+import Notification from '../components/Notification'
+import ConfirmDialog from '../components/ConfirmDialog'
+import Popup from '../components/Popup'
+import PageHeader from '../components/PageHeader'
+import useTable from '../components/useTable'
+//
+//  Services
+//
+import * as rowService from '../services/rowService'
+//
+//  Styles
+//
 const useStyles = makeStyles(theme => ({
   pageContent: {
     margin: theme.spacing(5),
@@ -35,19 +49,27 @@ const useStyles = makeStyles(theme => ({
     right: '10px'
   }
 }))
-
+//
+//  Table Heading
+//
 const headCells = [
-  { id: 'fullName', label: 'Employee Name' },
-  { id: 'email', label: 'Email Address (Personal)' },
-  { id: 'mobile', label: 'Mobile Number' },
-  { id: 'department', label: 'Department' },
+  { id: 'qowner', label: 'Owner' },
+  { id: 'qkey', label: 'Key' },
+  { id: 'qtitle', label: 'Title' },
+  { id: 'qdetail', label: 'Question' },
   { id: 'actions', label: 'Actions', disableSorting: true }
 ]
-
-export default function Employees() {
+//=====================================================================================
+export default function RowList() {
+  //
+  //  Styles
+  //
   const classes = useStyles()
+  //
+  //  State
+  //
   const [recordForEdit, setRecordForEdit] = useState(null)
-  const [records, setRecords] = useState(employeeService.getAllEmployees())
+  const [records, setRecords] = useState(rowService.getRowAll())
   const [filterFn, setFilterFn] = useState({
     fn: items => {
       return items
@@ -64,10 +86,12 @@ export default function Employees() {
     title: '',
     subTitle: ''
   })
-
+  //
   const { TblContainer, TblHead, TblPagination, recordsAfterPagingAndSorting } =
     useTable(records, headCells, filterFn)
-
+  //
+  //  Search
+  //
   const handleSearch = e => {
     let target = e.target
     setFilterFn({
@@ -75,56 +99,64 @@ export default function Employees() {
         if (target.value === '') return items
         else
           return items.filter(x =>
-            x.fullName.toLowerCase().includes(target.value)
+            x.qdetail.toLowerCase().includes(target.value)
           )
       }
     })
   }
-
-  const addOrEdit = (employee, resetForm) => {
-    if (employee.id === 0) employeeService.insertEmployee(employee)
-    else employeeService.updateEmployee(employee)
+  //
+  //  Update Database
+  //
+  const addOrEdit = (row, resetForm) => {
+    if (row.id === 0) rowService.insertRow(row)
+    else rowService.updateRow(row)
     resetForm()
     setRecordForEdit(null)
     setOpenPopup(false)
-    setRecords(employeeService.getAllEmployees())
+    setRecords(rowService.getRowAll())
     setNotify({
       isOpen: true,
       message: 'Submitted Successfully',
       severity: 'success'
     })
   }
-
-  const openInPopup = item => {
-    setRecordForEdit(item)
+  //
+  //  Data Entry Popup
+  //
+  const openInPopup = row => {
+    setRecordForEdit(row)
     setOpenPopup(true)
   }
-
+  //
+  //  Delete Row
+  //
   const onDelete = id => {
     setConfirmDialog({
       ...confirmDialog,
       isOpen: false
     })
-    employeeService.deleteEmployee(id)
-    setRecords(employeeService.getAllEmployees())
+    rowService.deleteRow(id)
+    setRecords(rowService.getRowAll())
     setNotify({
       isOpen: true,
       message: 'Deleted Successfully',
       severity: 'error'
     })
   }
-
+  //...................................................................................
+  //.  Render the form
+  //...................................................................................
   return (
     <>
       <PageHeader
-        title='New Employee'
-        subTitle='Form design with validation'
+        title='Questions'
+        subTitle='Data Entry and Maintenance'
         icon={<PeopleOutlineTwoToneIcon fontSize='large' />}
       />
       <Paper className={classes.pageContent}>
         <Toolbar>
           <Controls.MyInput
-            label='Search Employees'
+            label='Search'
             className={classes.searchInput}
             InputProps={{
               startAdornment: (
@@ -149,17 +181,17 @@ export default function Employees() {
         <TblContainer>
           <TblHead />
           <TableBody>
-            {recordsAfterPagingAndSorting().map(item => (
-              <TableRow key={item.id}>
-                <TableCell>{item.fullName}</TableCell>
-                <TableCell>{item.email}</TableCell>
-                <TableCell>{item.mobile}</TableCell>
-                <TableCell>{item.department}</TableCell>
+            {recordsAfterPagingAndSorting().map(row => (
+              <TableRow key={row.id}>
+                <TableCell>{row.qowner}</TableCell>
+                <TableCell>{row.qkey}</TableCell>
+                <TableCell>{row.qtitle}</TableCell>
+                <TableCell>{row.qdetail}</TableCell>
                 <TableCell>
                   <Controls.MyActionButton
                     color='primary'
                     onClick={() => {
-                      openInPopup(item)
+                      openInPopup(row)
                     }}
                   >
                     <EditOutlinedIcon fontSize='small' />
@@ -172,7 +204,7 @@ export default function Employees() {
                         title: 'Are you sure to delete this record?',
                         subTitle: "You can't undo this operation",
                         onConfirm: () => {
-                          onDelete(item.id)
+                          onDelete(row.id)
                         }
                       })
                     }}
@@ -187,11 +219,11 @@ export default function Employees() {
         <TblPagination />
       </Paper>
       <Popup
-        title='Employee Form'
+        title='Question Form'
         openPopup={openPopup}
         setOpenPopup={setOpenPopup}
       >
-        <EmployeeForm recordForEdit={recordForEdit} addOrEdit={addOrEdit} />
+        <RowEntry recordForEdit={recordForEdit} addOrEdit={addOrEdit} />
       </Popup>
       <Notification notify={notify} setNotify={setNotify} />
       <ConfirmDialog

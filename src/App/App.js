@@ -8,14 +8,13 @@ import {
 } from '@mui/material/styles'
 import { CssBaseline } from '@mui/material'
 import makeStyles from '@mui/styles/makeStyles'
-
 //
 //   Sub Components
 //
-import './App.css'
-import Employees from '../pages/Employees/Employees'
+import RowList from '../pages/RowList'
 //
-
+//  Themes
+//
 const theme = createTheme({
   palette: {
     primary: {
@@ -57,7 +56,7 @@ function App() {
     <StyledEngineProvider injectFirst>
       <ThemeProvider theme={theme}>
         <div className={classes.appMain}>
-          <Employees />
+          <RowList />
         </div>
         <CssBaseline />
       </ThemeProvider>
