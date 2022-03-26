@@ -8,9 +8,7 @@ import { Grid } from '@mui/material'
 //
 import Controls from '../components/controls/Controls'
 import { useForm, Form } from '../components/useForm'
-//
-//  Form Initial Values
-//
+
 const initialFValues = {
   qid: 0,
   qowner: 'public',
@@ -29,84 +27,55 @@ const initialFValues = {
 
 export default function RowEntry(props) {
   const { addOrEdit, recordForEdit } = props
-
-  //...................................................................................
   //
-  // Validate the fields
+  //  Validate the fields
   //
   const validate = (fieldValues = values) => {
-    //
-    //  Load previous errors
-    //
-    let errorsUpd = { ...errors }
+    let temp = { ...errors }
     if ('qowner' in fieldValues)
-      errorsUpd.qowner = fieldValues.qowner ? '' : 'This field is required.'
-
+      temp.qowner = fieldValues.qowner ? '' : 'This field is required.'
     if ('qkey' in fieldValues)
-      errorsUpd.qkey = fieldValues.qkey ? '' : 'This field is required.'
-
+      temp.qkey = fieldValues.qkey ? '' : 'This field is required.'
     if ('qdetail' in fieldValues)
-      errorsUpd.qdetail = fieldValues.qdetail ? '' : 'This field is required.'
-
+      temp.qdetail = fieldValues.qdetail ? '' : 'This field is required.'
     if ('qanswer_correct' in fieldValues)
-      errorsUpd.qanswer_correct = fieldValues.qanswer_correct
+      temp.qanswer_correct = fieldValues.qanswer_correct
         ? ''
         : 'This field is required.'
-
     if ('qanswer_bad1' in fieldValues)
-      errorsUpd.qanswer_bad1 = fieldValues.qanswer_bad1
+      temp.qanswer_bad1 = fieldValues.qanswer_bad1
         ? ''
         : 'This field is required.'
-
     if ('qkey' in fieldValues)
-      errorsUpd.qgroup1 = fieldValues.qgroup1 ? '' : 'This field is required.'
-
-    //
-    //  Set the errors
-    //
+      temp.qgroup1 = fieldValues.qgroup1 ? '' : 'This field is required.'
     setErrors({
-      ...errorsUpd
+      ...temp
     })
-    //
 
-    if (fieldValues === values)
-      return Object.values(errorsUpd).every(x => x === '')
+    if (fieldValues === values) return Object.values(temp).every(x => x === '')
   }
-  //...................................................................................
-  //
-  //  UseForm
-  //
+
   const { values, setValues, errors, setErrors, handleInputChange, resetForm } =
     useForm(initialFValues, true, validate)
-  //...................................................................................
-  //.  Submit form
-  //...................................................................................
+  //
+  //  Submit form
+  //
   const handleSubmit = e => {
     e.preventDefault()
     if (validate()) {
       addOrEdit(values, resetForm)
     }
   }
-  //...................................................................................
-  //.  Main Line
-  //...................................................................................
   //
   //  On change of record, set State
   //
   useEffect(() => {
-    console.log('useEffect')
     if (recordForEdit !== null)
       setValues({
         ...recordForEdit
       })
     // eslint-disable-next-line
   }, [recordForEdit])
-  //
-  //  Disable entry of Owner/Key on update
-  //
-  let disabled = false
-  if (values.qid !== 0) disabled = true
-  console.log('disabled input ', disabled)
   //...................................................................................
   //.  Render the form
   //...................................................................................
@@ -120,7 +89,6 @@ export default function RowEntry(props) {
             value={values.qowner}
             onChange={handleInputChange}
             error={errors.qowner}
-            disabled={disabled}
           />
         </Grid>
 
@@ -131,7 +99,6 @@ export default function RowEntry(props) {
             value={values.qkey}
             onChange={handleInputChange}
             error={errors.qkey}
-            disabled={disabled}
           />
         </Grid>
 

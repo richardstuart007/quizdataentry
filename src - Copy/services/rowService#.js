@@ -1,0 +1,235 @@
+//
+//  Utilities
+//
+import rowUpsert from './rowUpsert'
+import rowUpdate from './rowUpdate'
+import rowDelete from './rowDelete'
+import rowSelectAll from './rowSelectAll'
+import MyQueryPromise from './MyQueryPromise'
+//
+//  Local Storage Keys
+//
+const KEYS = {
+  ROW: 'questions_ROW',
+  QID: 'questions_QID'
+}
+//
+//  Debug logging
+//
+let g_log1 = true
+//.............................................................................
+//.  INSERT
+//.............................................................................
+export function insertRow(data) {
+  //
+  //  Data Received
+  //
+  if (g_log1) console.log('Upsert Row ', data)
+  //
+  //  Strip out qid as it will be populated by Insert
+  //
+  let { qid, ...rowData } = data
+  if (g_log1) console.log('Upsert Database rowData ', rowData)
+  //
+  //  Process promise
+  //
+  if (g_log1) console.log('rowUpsert')
+  var myPromise = MyQueryPromise(rowUpsert(rowData))
+  //
+  //  Initial status
+  //
+  if (g_log1) console.log('Initial pending:', myPromise.isPending()) //true
+  if (g_log1) console.log('Initial fulfilled:', myPromise.isFulfilled()) //false
+  if (g_log1) console.log('Initial rejected:', myPromise.isRejected()) //false
+  //
+  //  Resolve Status
+  //
+  myPromise.then(function (data) {
+    if (g_log1) console.log('myPromise ', myPromise)
+    if (g_log1) console.log('Final fulfilled:', myPromise.isFulfilled()) //true
+    if (g_log1) console.log('Final rejected:', myPromise.isRejected()) //false
+    if (g_log1) console.log('Final pending:', myPromise.isPending()) //false
+    if (g_log1) console.log('data ', data)
+    //
+    //  No data
+    //
+    if (!data) {
+      console.log('No Data returned')
+      throw Error
+    } else {
+      //
+      //  Get ID
+      //
+      const rtn_qid = data[0].qid
+      if (g_log1) console.log(`Row (${rtn_qid}) UPSERTED in Database`)
+    }
+  })
+  //
+  //  Local Storage
+  //
+  let database = getRowAll()
+  data['qid'] = generate_QID()
+  database.push(data)
+  if (g_log1) console.log('Insert Local Storage data ', data)
+  localStorage.setItem(KEYS.ROW, JSON.stringify(database))
+}
+//.............................................................................
+//.  UPDATE
+//.............................................................................
+export function updateRow(data) {
+  //
+  //  Data Received
+  //
+  if (g_log1) console.log('updateRow Row ', data)
+  //
+  //  Process promise
+  //
+  if (g_log1) console.log('rowUpsert')
+  var myPromise = MyQueryPromise(rowUpdate(data))
+  //
+  //  Initial status
+  //
+  if (g_log1) console.log('Initial pending:', myPromise.isPending()) //true
+  if (g_log1) console.log('Initial fulfilled:', myPromise.isFulfilled()) //false
+  if (g_log1) console.log('Initial rejected:', myPromise.isRejected()) //false
+  //
+  //  Resolve Status
+  //
+  myPromise.then(function (data) {
+    if (g_log1) console.log('myPromise ', myPromise)
+    if (g_log1) console.log('Final fulfilled:', myPromise.isFulfilled()) //true
+    if (g_log1) console.log('Final rejected:', myPromise.isRejected()) //false
+    if (g_log1) console.log('Final pending:', myPromise.isPending()) //false
+    if (g_log1) console.log('data ', data)
+    //
+    //  No data
+    //
+    if (!data) {
+      console.log('No Data returned')
+      throw Error
+    } else {
+      //
+      //  Get QID
+      //
+      const rtn_qid = data[0].qid
+      if (g_log1) console.log(`Row (${rtn_qid}) UPDATED in Database`)
+    }
+  })
+  //
+  //  Local Storage
+  //
+  let database = getRowAll()
+  let recordIndex = database.findIndex(x => x.qid === data.qid)
+  database[recordIndex] = { ...data }
+  localStorage.setItem(KEYS.ROW, JSON.stringify(database))
+}
+//.............................................................................
+//.  DELETE
+//.............................................................................
+export function deleteRow(qid) {
+  //
+  //  Data Received
+  //
+  if (g_log1) console.log('rowDelete', qid)
+  //
+  //  Process promise
+  //
+  if (g_log1) console.log('rowDelete')
+  var myPromise = MyQueryPromise(rowDelete(qid))
+  //
+  //  Initial status
+  //
+  if (g_log1) console.log('Initial pending:', myPromise.isPending()) //true
+  if (g_log1) console.log('Initial fulfilled:', myPromise.isFulfilled()) //false
+  if (g_log1) console.log('Initial rejected:', myPromise.isRejected()) //false
+  //
+  //  Resolve Status
+  //
+  myPromise.then(function (data) {
+    if (g_log1) console.log('myPromise ', myPromise)
+    if (g_log1) console.log('Final fulfilled:', myPromise.isFulfilled()) //true
+    if (g_log1) console.log('Final rejected:', myPromise.isRejected()) //false
+    if (g_log1) console.log('Final pending:', myPromise.isPending()) //false
+    if (g_log1) console.log('data ', data)
+    //
+    //  No data
+    //
+    if (!data) {
+      console.log('No Data returned')
+      throw Error
+    } else {
+      //
+      //  Get QID
+      //
+      const rtn_qid = data[0].qid
+      if (g_log1) console.log(`Row (${rtn_qid}) DELETED in Database`)
+    }
+  })
+  //
+  //  Local Storage
+  //
+  let database = getRowAll()
+  database = database.filter(x => x.qid !== qid)
+  localStorage.setItem(KEYS.ROW, JSON.stringify(database))
+}
+//.............................................................................
+//.  GET ALL
+//.............................................................................
+export function getRowAll() {
+  //
+  //  Process promise
+  //
+  if (g_log1) console.log('rowSelectAll')
+  var myPromise = MyQueryPromise(rowSelectAll())
+  //
+  //  Initial status
+  //
+  if (g_log1) console.log('Initial pending:', myPromise.isPending()) //true
+  if (g_log1) console.log('Initial fulfilled:', myPromise.isFulfilled()) //false
+  if (g_log1) console.log('Initial rejected:', myPromise.isRejected()) //false
+  //
+  //  Resolve Status
+  //
+  myPromise.then(function (data) {
+    if (g_log1) console.log('myPromise ', myPromise)
+    if (g_log1) console.log('Final fulfilled:', myPromise.isFulfilled()) //true
+    if (g_log1) console.log('Final rejected:', myPromise.isRejected()) //false
+    if (g_log1) console.log('Final pending:', myPromise.isPending()) //false
+    if (g_log1) console.log('data ', data)
+    //
+    //  No data
+    //
+    if (!data) {
+      console.log('No Data returned')
+      throw Error
+    } else {
+      //
+      //  Get Count
+      //
+      const rtn_length = data.length
+      if (g_log1) console.log(`Rows (${rtn_length}) SELECTED in Database`)
+      return data
+    }
+  })
+  //
+  //  Local Storage
+  //
+  if (localStorage.getItem(KEYS.ROW) === null)
+    localStorage.setItem(KEYS.ROW, JSON.stringify([]))
+  let database = JSON.parse(localStorage.getItem(KEYS.ROW))
+  if (g_log1) console.log(`localStorage database `, database)
+  return database
+}
+//.............................................................................
+//.  Generate next QID
+//.............................................................................
+export function generate_QID() {
+  //.  If no ID then store 0
+  if (localStorage.getItem(KEYS.QID) === null)
+    localStorage.setItem(KEYS.QID, '0')
+  //.  Get Store value
+  var qid = parseInt(localStorage.getItem(KEYS.QID))
+  //.  Increment ID by 1 and store
+  localStorage.setItem(KEYS.QID, (++qid).toString())
+  return qid
+}

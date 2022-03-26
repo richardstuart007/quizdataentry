@@ -32,11 +32,8 @@ import useTable from '../components/useTable'
 //
 //  Services
 //
+import * as rowService from '../services/rowService'
 import MyQueryPromise from '../services/MyQueryPromise'
-import rowUpsert from '../services/rowUpsert'
-import rowUpdate from '../services/rowUpdate'
-import rowDelete from '../services/rowDelete'
-import rowSelectAll from '../services/rowSelectAll'
 //
 //  Styles
 //
@@ -60,8 +57,8 @@ const headCells = [
   { id: 'qid', label: 'ID' },
   { id: 'qowner', label: 'Owner' },
   { id: 'qkey', label: 'Key' },
+  { id: 'qtitle', label: 'Title' },
   { id: 'qdetail', label: 'Question' },
-  { id: 'qgroup1', label: 'Group 1' },
   { id: 'actions', label: 'Actions', disableSorting: true }
 ]
 //
@@ -78,176 +75,37 @@ export default function RowList() {
     //  Process promise
     //
     if (g_log1) console.log('getRowAllData')
-    var myPromiseGet = MyQueryPromise(rowSelectAll())
+    var myPromise = MyQueryPromise(rowService.getRowAll())
     //
     //  Initial status
     //
-    if (g_log1) console.log('Initial pending:', myPromiseGet.isPending()) //true
-    if (g_log1) console.log('Initial fulfilled:', myPromiseGet.isFulfilled()) //false
-    if (g_log1) console.log('Initial rejected:', myPromiseGet.isRejected()) //false
+    if (g_log1) console.log('Initial pending:', myPromise.isPending()) //true
+    if (g_log1) console.log('Initial fulfilled:', myPromise.isFulfilled()) //false
+    if (g_log1) console.log('Initial rejected:', myPromise.isRejected()) //false
     //
     //  Resolve Status
     //
-    myPromiseGet.then(function (data) {
-      if (g_log1) console.log('myPromise ', myPromiseGet)
-      if (g_log1) console.log('Final fulfilled:', myPromiseGet.isFulfilled()) //true
-      if (g_log1) console.log('Final rejected:', myPromiseGet.isRejected()) //false
-      if (g_log1) console.log('Final pending:', myPromiseGet.isPending()) //false
-      if (g_log1) console.log('data ', data)
-      //
-      //  Update Table
-      //
-      setRecords(data)
-      //
-      //  Return Data
-      //
-      return data
-    })
-    //
-    //  Return Promise
-    //
-    return myPromiseGet
-  }
-  //.............................................................................
-  //.  DELETE
-  //.............................................................................
-  const deleteRowData = qid => {
-    //
-    //  Process promise
-    //
-    if (g_log1) console.log('deleteRowData')
-    var myPromiseDelete = MyQueryPromise(rowDelete(qid))
-    //
-    //  Initial status
-    //
-    if (g_log1) console.log('Initial pending:', myPromiseDelete.isPending()) //true
-    if (g_log1) console.log('Initial fulfilled:', myPromiseDelete.isFulfilled()) //false
-    if (g_log1) console.log('Initial rejected:', myPromiseDelete.isRejected()) //false
-    //
-    //  Resolve Status
-    //
-    myPromiseDelete.then(function (data) {
-      if (g_log1) console.log('myPromise ', myPromiseDelete)
-      if (g_log1) console.log('Final fulfilled:', myPromiseDelete.isFulfilled()) //true
-      if (g_log1) console.log('Final rejected:', myPromiseDelete.isRejected()) //false
-      if (g_log1) console.log('Final pending:', myPromiseDelete.isPending()) //false
-      if (g_log1) console.log('data ', data)
-      //
-      //  Return Data
-      //
-      return data
-    })
-    //
-    //  Return Promise
-    //
-    return myPromiseDelete
-  }
-  //.............................................................................
-  //.  INSERT
-  //.............................................................................
-  const insertRowData = data => {
-    //
-    //  Data Received
-    //
-    if (g_log1) console.log('Upsert Row ', data)
-    //
-    //  Strip out qid as it will be populated by Insert
-    //
-    let { qid, ...rowData } = data
-    if (g_log1) console.log('Upsert Database rowData ', rowData)
-    //
-    //  Process promise
-    //
-    if (g_log1) console.log('rowUpsert')
-    var myPromiseInsert = MyQueryPromise(rowUpsert(rowData))
-    //
-    //  Initial status
-    //
-    if (g_log1) console.log('Initial pending:', myPromiseInsert.isPending()) //true
-    if (g_log1) console.log('Initial fulfilled:', myPromiseInsert.isFulfilled()) //false
-    if (g_log1) console.log('Initial rejected:', myPromiseInsert.isRejected()) //false
-    //
-    //  Resolve Status
-    //
-    myPromiseInsert.then(function (data) {
-      if (g_log1) console.log('myPromise ', myPromiseInsert)
-      if (g_log1) console.log('Final fulfilled:', myPromiseInsert.isFulfilled()) //true
-      if (g_log1) console.log('Final rejected:', myPromiseInsert.isRejected()) //false
-      if (g_log1) console.log('Final pending:', myPromiseInsert.isPending()) //false
-      if (g_log1) console.log('data ', data)
-      //
-      //  No data returned
-      //
-      if (!data) {
-        console.log('No Data returned')
-        throw Error
-      } else {
-        //
-        //  Get ID
-        //
-        const rtn_qid = data[0].qid
-        if (g_log1) console.log(`Row (${rtn_qid}) UPSERTED in Database`)
-      }
-      //
-      //  Return Data
-      //
-      return data
-    })
-    //
-    //  Return Promise
-    //
-    return myPromiseInsert
-  }
-  //.............................................................................
-  //.  UPDATE
-  //.............................................................................
-  const updateRowData = data => {
-    //
-    //  Data Received
-    //
-    if (g_log1) console.log('updateRow Row ', data)
-    //
-    //  Process promise
-    //
-    if (g_log1) console.log('rowUpsert')
-    var myPromiseUpdate = MyQueryPromise(rowUpdate(data))
-    //
-    //  Initial status
-    //
-    if (g_log1) console.log('Initial pending:', myPromiseUpdate.isPending()) //true
-    if (g_log1) console.log('Initial fulfilled:', myPromiseUpdate.isFulfilled()) //false
-    if (g_log1) console.log('Initial rejected:', myPromiseUpdate.isRejected()) //false
-    //
-    //  Resolve Status
-    //
-    myPromiseUpdate.then(function (data) {
-      if (g_log1) console.log('myPromise ', myPromiseUpdate)
-      if (g_log1) console.log('Final fulfilled:', myPromiseUpdate.isFulfilled()) //true
-      if (g_log1) console.log('Final rejected:', myPromiseUpdate.isRejected()) //false
-      if (g_log1) console.log('Final pending:', myPromiseUpdate.isPending()) //false
+    myPromise.then(function (data) {
+      if (g_log1) console.log('myPromise ', myPromise)
+      if (g_log1) console.log('Final fulfilled:', myPromise.isFulfilled()) //true
+      if (g_log1) console.log('Final rejected:', myPromise.isRejected()) //false
+      if (g_log1) console.log('Final pending:', myPromise.isPending()) //false
       if (g_log1) console.log('data ', data)
       //
       //  No data
       //
       if (!data) {
         console.log('No Data returned')
-        throw Error
+        setRecords([])
       } else {
         //
-        //  Get QID
+        //  Get Count
         //
-        const rtn_qid = data[0].qid
-        if (g_log1) console.log(`Row (${rtn_qid}) UPDATED in Database`)
+        const rtn_length = data.length
+        if (g_log1) console.log(`Rows (${rtn_length}) SELECTED in Database`)
+        setRecords(data)
       }
-      //
-      //  Return Data
-      //
-      return data
     })
-    //
-    //  Return Promise
-    //
-    return myPromiseUpdate
   }
   //.............................................................................
   //
@@ -283,7 +141,12 @@ export default function RowList() {
     title: '',
     subTitle: ''
   })
-
+  //.............................................................................
+  //
+  //  Populate the Table
+  //
+  const { TblContainer, TblHead, TblPagination, recordsAfterPagingAndSorting } =
+    useTable(records, headCells, filterFn)
   //.............................................................................
   //
   //  Search
@@ -305,12 +168,12 @@ export default function RowList() {
   //  Update Database
   //
   const addOrEdit = (row, resetForm) => {
-    row.qid === 0 ? insertRowData(row) : updateRowData(row)
+    if (row.qid === 0) rowService.insertRow(row)
+    else rowService.updateRow(row)
     resetForm()
     setRecordForEdit(null)
     setOpenPopup(false)
-    // setRecords(getRowAllData())
-    getRowAllData()
+    setRecords(getRowAllData())
     setNotify({
       isOpen: true,
       message: 'Submitted Successfully',
@@ -334,9 +197,8 @@ export default function RowList() {
       ...confirmDialog,
       isOpen: false
     })
-    deleteRowData(qid)
-    // setRecords(getRowAllData())
-    getRowAllData()
+    rowService.deleteRow(qid)
+    setRecords(getRowAllData())
     setNotify({
       isOpen: true,
       message: 'Deleted Successfully',
@@ -351,12 +213,6 @@ export default function RowList() {
     getRowAllData()
     // eslint-disable-next-line
   }, [])
-  //.............................................................................
-  //
-  //  Populate the Table
-  //
-  const { TblContainer, TblHead, TblPagination, recordsAfterPagingAndSorting } =
-    useTable(records, headCells, filterFn)
   //...................................................................................
   //.  Render the form
   //...................................................................................
@@ -400,8 +256,8 @@ export default function RowList() {
                 <TableCell>{row.qid}</TableCell>
                 <TableCell>{row.qowner}</TableCell>
                 <TableCell>{row.qkey}</TableCell>
+                <TableCell>{row.qtitle}</TableCell>
                 <TableCell>{row.qdetail}</TableCell>
-                <TableCell>{row.qgroup1}</TableCell>
                 <TableCell>
                   <Controls.MyActionButton
                     color='primary'

@@ -49,6 +49,7 @@ export default function useTable(records, headCells, filterFn) {
     }
 
     console.log(records)
+    if (!records) return <p>No records</p>
 
     return (
       <TableHead>
